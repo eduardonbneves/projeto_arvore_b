@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ARQUIVO_DADOS "veiculos.dat"
+#define ARQUIVO_INDICE "indices.idx"
+
 #define MAX_MARCA 20
 #define MAX_MODELO 50
 #define MAX_ANO 9

@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1776450336 source:c:\users\eduardo.neves\desktop\projeto_arvore_b\main.c
+1776451829 source:c:\users\eduardo.neves\desktop\projeto_arvore_b\main.c
 	"global.h"
 
-1776430193 c:\users\eduardo.neves\desktop\projeto_arvore_b\global.h
+1776452038 c:\users\eduardo.neves\desktop\projeto_arvore_b\global.h
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

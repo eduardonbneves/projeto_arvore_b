@@ -1,7 +1,7 @@
 #include "global.h"
 
 long salvar_veiculo_arquivo(Veiculo v) {
-    FILE *arq = fopen("veiculos.dat", "a");
+    FILE *arq = fopen(ARQUIVO_DADOS, "a");
     if (arq == NULL) return -1;
 
     // Pega a posição atual antes de escrever

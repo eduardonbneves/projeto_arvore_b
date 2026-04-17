@@ -3,9 +3,14 @@
 int main() {
     // 1. Criar um nó manual para teste
     NoB *raiz = criar_no(1); // Criamos um nó folha
+    int id;
+
+    do {
+        id = (rand() % 10000) + 1;
+    } while (buscar_arvore(raiz, id) != -1);
 
     // 2. Simular um veículo já salvo
-    Veiculo v1 = {10, "Ford", "Ka", "2020", "Azul", "Flex", "Manual", 4, 35000.0, 50000, 1};
+    Veiculo v1 = {id, "Ford", "Ka", "2020", "Azul", "Flex", "Manual", 4, 35000.0, 50000, 1};
     long pos = salvar_veiculo_arquivo(v1);
 
     // 3. Colocar "na mão" na árvore (só para testar a busca)
@@ -14,7 +19,7 @@ int main() {
     raiz->total_ids = 1;
 
     // 4. Testar a busca
-    int id_procurado = 10;
+    int id_procurado = 42;
     long offset_achado = buscar_arvore(raiz, id_procurado);
 
     if (offset_achado != -1) {
