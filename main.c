@@ -1,23 +1,26 @@
 #include "global.h"
 
 int main() {
-    // 1. Criar e preencher um veículo de teste
-    Veiculo v1;
-    v1.id = 1;
-    strcpy(v1.marca, "Fiat");
-    strcpy(v1.modelo, "Uno");
-    strcpy(v1.ano, "2010");
-    v1.preco = 15000.00;
-    v1.status = 1;
+    // 1. Criar um nó manual para teste
+    NoB *raiz = criar_no(1); // Criamos um nó folha
 
-    // 2. Chamar a função e capturar o offset
+    // 2. Simular um veículo já salvo
+    Veiculo v1 = {10, "Ford", "Ka", "2020", "Azul", "Flex", "Manual", 4, 35000.0, 50000, 1};
     long pos = salvar_veiculo_arquivo(v1);
 
-    // 3. Verificar se deu certo
-    if (pos != -1) {
-        printf("Veiculo salvo com sucesso no offset: %ld\n", pos);
+    // 3. Colocar "na mão" na árvore (só para testar a busca)
+    raiz->ids[0] = v1.id;
+    raiz->offsets[0] = pos;
+    raiz->total_ids = 1;
+
+    // 4. Testar a busca
+    int id_procurado = 10;
+    long offset_achado = buscar_arvore(raiz, id_procurado);
+
+    if (offset_achado != -1) {
+        printf("ID encontrado no offset %ld. Agora o Programador A pode ler o arquivo!\n", offset_achado);
     } else {
-        printf("Erro ao salvar no arquivo.\n");
+        printf("ID nao encontrado.\n");
     }
 
     return 0;
