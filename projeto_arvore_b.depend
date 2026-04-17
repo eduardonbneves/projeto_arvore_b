@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1776448777 source:c:\users\eduardo.neves\desktop\projeto_arvore_b\main.c
+	"global.h"
+
+1776430193 c:\users\eduardo.neves\desktop\projeto_arvore_b\global.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1776448894 source:c:\users\eduardo.neves\desktop\projeto_arvore_b\arquivo.c
+	"global.h"
+
