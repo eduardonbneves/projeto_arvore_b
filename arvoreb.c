@@ -135,9 +135,11 @@ void salvar_indice_texto_recursivo(NoB *raiz, FILE *arq) {
   if (raiz == NULL)
     return;
 
-  // Salva os dados de cada ID presente neste nó
+  // Salva os dados de cada ID presente neste nó apenas se não for fantasma
   for (int i = 0; i < raiz->total_ids; i++) {
-    fprintf(arq, "%0*d|%ld\n", TAM_ID, raiz->ids[i], raiz->offsets[i]);
+    if (raiz->offsets[i] != -1) {
+      fprintf(arq, "%0*d|%ld\n", TAM_ID, raiz->ids[i], raiz->offsets[i]);
+    }
   }
 
   // Se não for folha, continua navegando para os filhos

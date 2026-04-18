@@ -177,6 +177,44 @@ void listar_todos_em_ordem(NoB *raiz) {
   }
 }
 
+void compactar_banco_recursivo(NoB *raiz, FILE *novo_arq) {
+  if (raiz != NULL) {
+    int i;
+    for (i = 0; i < raiz->total_ids; i++) {
+      compactar_banco_recursivo(raiz->filhos[i], novo_arq);
+      if (raiz->offsets[i] != -1) {
+        Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
+        if (v.id != -1) {
+          long novo_offset = ftell(novo_arq);
+          fprintf(novo_arq, "%0*d|%-50s|%s|%s|%s|%s|%s|%d|%.2f|%d\n", TAM_ID,
+                  v.id, v.marca, v.modelo, v.ano, v.cor, v.combustivel,
+                  v.cambio, v.portas, v.preco, v.km);
+          raiz->offsets[i] = novo_offset;
+        }
+      }
+    }
+    compactar_banco_recursivo(raiz->filhos[i], novo_arq);
+  }
+}
+
+void desfragmentar_dados(NoB **raiz) {
+  printf("\nIniciando compactacao e limpeza do banco de dados...\n");
+  FILE *novo_arq = fopen("veiculos_tmp.dat", "w");
+  if (!novo_arq) {
+    printf("Erro ao criar arquivo temporario!\n");
+    return;
+  }
+  compactar_banco_recursivo(*raiz, novo_arq);
+  fclose(novo_arq);
+
+  remove(ARQUIVO_DADOS);
+  rename("veiculos_tmp.dat", ARQUIVO_DADOS);
+
+  finalizar_indices(*raiz);
+  printf("Banco de dados otimizado com sucesso! Registros desatualizados do "
+         "veiculos.dat foram fisicamente excluidos.\n");
+}
+
 // Limpeza profunda da arvore via In-Order/Pos-Ordem para evitar Leak
 void liberar_arvore(NoB *raiz) {
   if (raiz == NULL)
@@ -362,7 +400,7 @@ int main() {
       break;
     }
     case 0:
-      finalizar_indices(raiz);
+      desfragmentar_dados(&raiz);
       liberar_arvore(raiz);
       printf("\nSaindo e memoria da Arvore-B liberada com sucesso.\n");
       break;
