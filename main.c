@@ -50,9 +50,10 @@ void ler_alfanumerico(char *dest, int max) {
 void ler_ano_texto(char *dest, int max) {
   while (1) {
     ler_string_seguro(dest, max);
-    if (strlen(dest) >= 4)
+    if (strlen(dest) >= 4 && strchr(dest, '|') == NULL)
       break;
-    printf("Entrada invalida! O ano deve ter no minimo 4 caracteres: ");
+    printf("Entrada invalida! O ano deve ter no minimo 4 caracteres e nao pode "
+           "conter '|': ");
   }
 }
 
