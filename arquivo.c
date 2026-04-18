@@ -10,7 +10,7 @@ long salvar_veiculo_arquivo(Veiculo v) {
 
     // Escreve no formato ASCII (campos fixos e variáveis com delimitador)
     // Exemplo: ID|MARCA (20 chars)|MODELO...
-    fprintf(arq, "%04d|%-20s|%s|%s|%.2f|%d\n",
+    fprintf(arq, "%05d|%-20s|%s|%s|%.2f|%d\n",
             v.id, v.marca, v.modelo, v.ano, v.preco, v.status);
 
     fclose(arq);

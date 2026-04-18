@@ -1,31 +1,57 @@
 #include "global.h"
 
 int main() {
-    // 1. Criar um n� manual para teste
-    NoB *raiz = criar_no(1); // Criamos um n� folha
-    int id;
+    // 1. Inicialização
+    NoB *raiz = NULL; // Começamos com a árvore vazia
+    int proximo_id = 1; // Valor inicial padrão
 
-    do {
-        id = (rand() % 10000) + 1;
-    } while (buscar_arvore(raiz, id) != -1);
+    // --- LOGICA DE AUTO-INCREMENTO (Início) ---
+    // Tentamos abrir o arquivo para descobrir qual o maior ID que já existe
+    FILE *arq_check = fopen("veiculos.dat", "r");
+    if (arq_check != NULL) {
+        char linha[1024];
+        int id_lido;
 
-    // 2. Simular um ve�culo j� salvo
-    Veiculo v1 = {id, "Ford", "Ka", "2020", "Azul", "Flex", "Manual", 4, 35000.0, 50000, 1};
+        // Lê a linha inteira para o buffer primeiro
+        while (fgets(linha, sizeof(linha), arq_check)) {
+            // Tenta extrair o ID que está antes do primeiro '|'
+            if (sscanf(linha, "%d|", &id_lido) == 1) {
+                if (id_lido >= proximo_id) {
+                    proximo_id = id_lido + 1;
+                }
+            }
+        }
+        fclose(arq_check);
+    }
+    // --- LOGICA DE AUTO-INCREMENTO (Fim) ---
+
+    // 2. Criar a raiz se ela não existir
+    if (raiz == NULL) raiz = criar_no(1);
+
+    // 3. Usar o ID incremental
+    int id_atual = proximo_id++; // Usa o valor de proximo_id e depois soma +1
+
+    // 4. Simular o veículo com o ID automático
+    Veiculo v1 = {id_atual, "Chevrolet", "Onix", "2020", "Azul", "Flex", "Automatico", 4, 35000.0, 50000, 1};
+
+    // 5. Salvar no arquivo (Programador A)
     long pos = salvar_veiculo_arquivo(v1);
 
-    // 3. Colocar "na m�o" na �rvore (s� para testar a busca)
+    // 6. Colocar na Árvore-B (Programador B)
+    // Aqui, no futuro, você usará a função inserir_arvore completa.
+    // Por enquanto, mantemos a inserção manual para o seu teste de busca:
     raiz->ids[0] = v1.id;
     raiz->offsets[0] = pos;
     raiz->total_ids = 1;
 
-    // 4. Testar a busca
-    int id_procurado = 42;
-    long offset_achado = buscar_arvore(raiz, id_procurado);
+    // 7. Testar a busca
+    printf("Buscando o veiculo recem-criado (ID %d)...\n", v1.id);
+    long offset_achado = buscar_arvore(raiz, v1.id);
 
     if (offset_achado != -1) {
-        printf("ID encontrado no offset %ld. Agora o Programador A pode ler o arquivo!\n", offset_achado);
+        printf("Sucesso! ID %d encontrado no offset %ld.\n", v1.id, offset_achado);
     } else {
-        printf("ID nao encontrado.\n");
+        printf("Erro: ID nao encontrado na arvore.\n");
     }
 
     return 0;
