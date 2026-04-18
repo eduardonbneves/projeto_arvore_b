@@ -5,7 +5,7 @@ int main() {
     int proximo_id = 1;
 
     // Tentamos abrir o arquivo para descobrir qual o maior ID que já existe
-    FILE *arq_check = fopen("veiculos.dat", "r");
+    FILE *arq_check = fopen(ARQUIVO_DADOS, "r");
     if (arq_check != NULL) {
         char linha[1024];
         int id_lido;
