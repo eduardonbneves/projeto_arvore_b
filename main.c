@@ -3,21 +3,37 @@
 #include <stdlib.h>
 #include <string.h>
 
-void ler_string_seguro(char *dest, int max) {
-  fgets(dest, max, stdin);
+int ler_string_seguro(char *dest, int max) {
+  if (fgets(dest, max, stdin) == NULL)
+    exit(1);
   int len = strlen(dest);
   if (len > 0 && dest[len - 1] == '\n') {
     dest[len - 1] = '\0';
+    return 1;
   } else {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-      ;
+    // Se não encontrou o \n na string lida, verifica se ele é o próximo
+    // imediato no buffer
+    int c = getchar();
+    if (c == '\n' || c == EOF) {
+      return 1; // Texto coube matematicamente exato no buffer!
+    } else {
+      // Estourou! Precisa limpar os lixos restantes
+      while (c != '\n' && c != EOF) {
+        c = getchar();
+      }
+      return 0;
+    }
   }
 }
 
 void ler_somente_letras(char *dest, int max) {
   while (1) {
-    ler_string_seguro(dest, max);
+    if (!ler_string_seguro(dest, max)) {
+      printf("Entrada invalida! Limite de %d caracteres excedido. Digite "
+             "novamente: ",
+             max - 1);
+      continue;
+    }
     int valido = 1;
     for (int i = 0; dest[i] != '\0'; i++) {
       if (!isalpha(dest[i]) && dest[i] != ' ') {
@@ -33,7 +49,12 @@ void ler_somente_letras(char *dest, int max) {
 
 void ler_alfanumerico(char *dest, int max) {
   while (1) {
-    ler_string_seguro(dest, max);
+    if (!ler_string_seguro(dest, max)) {
+      printf("Entrada invalida! Limite de %d caracteres excedido. Digite "
+             "novamente: ",
+             max - 1);
+      continue;
+    }
     int valido = 1;
     for (int i = 0; dest[i] != '\0'; i++) {
       if (!isalnum(dest[i]) && dest[i] != ' ' && dest[i] != '-') {
@@ -49,7 +70,12 @@ void ler_alfanumerico(char *dest, int max) {
 
 void ler_ano_texto(char *dest, int max) {
   while (1) {
-    ler_string_seguro(dest, max);
+    if (!ler_string_seguro(dest, max)) {
+      printf("Entrada invalida! Limite de %d caracteres excedido. Digite "
+             "novamente: ",
+             max - 1);
+      continue;
+    }
     if (strlen(dest) >= 4 && strchr(dest, '|') == NULL)
       break;
     printf("Entrada invalida! O ano deve ter no minimo 4 caracteres e nao pode "
@@ -58,9 +84,12 @@ void ler_ano_texto(char *dest, int max) {
 }
 
 int ler_inteiro() {
-  char buffer[256];
+  char buffer[12]; // Espaço até aprox ~2 Bilhões (limite int) + sinal negativo
   while (1) {
-    ler_string_seguro(buffer, sizeof(buffer));
+    if (!ler_string_seguro(buffer, sizeof(buffer))) {
+      printf("Entrada invalida! Numero muito grande. Digite novamente: ");
+      continue;
+    }
     int valido = 1;
     for (int i = 0; buffer[i] != '\0'; i++) {
       if (!isdigit(buffer[i]) && buffer[i] != '-') {
@@ -75,9 +104,12 @@ int ler_inteiro() {
 }
 
 float ler_float() {
-  char buffer[256];
+  char buffer[16]; // Margem até 15 digitos textuais
   while (1) {
-    ler_string_seguro(buffer, sizeof(buffer));
+    if (!ler_string_seguro(buffer, sizeof(buffer))) {
+      printf("Entrada invalida! Numero muito grande. Digite novamente: ");
+      continue;
+    }
     int valido = 1;
     int pontos = 0;
     for (int i = 0; buffer[i] != '\0'; i++) {
@@ -132,7 +164,7 @@ void listar_todos_em_ordem(NoB *raiz) {
     Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
     if (v.id != -1) {
       printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
-             "R$%-9.2f |\n",
+             "R$%-10.2f |\n",
              TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
     }
   }
