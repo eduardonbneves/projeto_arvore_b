@@ -1,36 +1,40 @@
 #include "global.h"
 
-// Função para reconstruir a Árvore-B a partir do arquivo de dados ao iniciar
-void carregar_arvore_do_arquivo(NoB **raiz, int *proximo_id) {
-    FILE *arq = fopen(ARQUIVO_DADOS, "r");
-    if (arq == NULL) return;
+void carregar_arvore_do_indice(NoB **raiz, int *proximo_id) {
+    FILE *arq = fopen(ARQUIVO_INDICE, "r");
+    if (arq == NULL) {
+        printf("Arquivo de indice nao encontrado. Iniciando arvore vazia.\n");
+        return;
+    }
 
     char linha[1024];
-    Veiculo v_temp;
-    long offset_atual;
+    int id_lido;
+    long offset_lido;
 
-    while (1) {
-        offset_atual = ftell(arq); // Guarda a posição exata antes de ler a linha
-        if (!fgets(linha, sizeof(linha), arq)) break;
+    // Lemos a linha inteira primeiro
+    while (fgets(linha, sizeof(linha), arq)) {
+        // O sscanf extrai os dados da string 'linha'
+        // Usamos %d porque o sscanf ignora os zeros a esquerda do ID automaticamente
+        if (sscanf(linha, "%d|%ld", &id_lido, &offset_lido) == 2) {
 
-        if (sscanf(linha, "%d|", &v_temp.id) == 1) {
-            // Atualiza o ID incremental
-            if (v_temp.id >= *proximo_id) {
-                *proximo_id = v_temp.id + 1;
+            inserir_arvore(raiz, id_lido, offset_lido);
+
+            if (id_lido >= *proximo_id) {
+                *proximo_id = id_lido + 1;
             }
-            // Insere na Árvore-B usando a função completa do Programador B
-            inserir_arvore(raiz, v_temp.id, offset_atual);
         }
     }
+
     fclose(arq);
+    printf("Arvore reconstruida com sucesso a partir de %s!\n", ARQUIVO_INDICE);
 }
 
 int main() {
     NoB *raiz = NULL;
     int proximo_id = 1;
 
-    // 1. CARGA INICIAL: Reconstroi a árvore na RAM e ajusta o ID incremental
-    carregar_arvore_do_arquivo(&raiz, &proximo_id);
+    // 1. CARGA INICIAL: Reconstroi a árvore a partir do indice e ajusta o ID incremental
+    carregar_arvore_do_indice(&raiz, &proximo_id);
     printf("Sistema iniciado. Proximo ID disponivel: %0*d\n", TAM_ID, proximo_id);
 
     // 2. SIMULAÇÃO DE CADASTRO
