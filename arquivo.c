@@ -5,7 +5,7 @@ long salvar_veiculo_arquivo(Veiculo v) {
   if (arq == NULL)
     return -1;
 
-  // Pega a posi��o atual antes de escrever
+  // Pega a posição atual antes de escrever
   fseek(arq, 0, SEEK_END);
   long offset = ftell(arq);
 
@@ -61,7 +61,7 @@ Veiculo ler_veiculo_arquivo(long offset) {
     token = strsep_custom(&linha_ptr, "|");
     if (token) {
       strncpy(v.marca, token, MAX_MARCA - 1);
-      // Limpa trailing spaces gerados pelo %-20s
+      // Limpa trailing spaces gerados
       for (int i = strlen(v.marca) - 1; i >= 0; i--) {
         if (v.marca[i] == ' ')
           v.marca[i] = '\0';
