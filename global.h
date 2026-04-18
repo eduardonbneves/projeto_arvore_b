@@ -18,35 +18,32 @@
 #define MAX_CAMBIO 20
 
 typedef struct {
-    int id;
-    char marca[MAX_MARCA];
-    char modelo[MAX_MODELO];
-    char ano[MAX_ANO];
-    char cor[MAX_COR];
-    char combustivel[MAX_COMBUSTIVEL];
-    char cambio[MAX_CAMBIO];
-    int portas;
-    float preco;
-    int km;
-    int status;                // 1 para ativo, 0 para removido (opcional)
+  int id;
+  char marca[MAX_MARCA];
+  char modelo[MAX_MODELO];
+  char ano[MAX_ANO];
+  char cor[MAX_COR];
+  char combustivel[MAX_COMBUSTIVEL];
+  char cambio[MAX_CAMBIO];
+  int portas;
+  float preco;
+  int km;
+  int status; // 1 para ativo, 0 para removido (opcional)
 } Veiculo;
 
-#define ORDEM 5
+#define ORDEM 6
 
 typedef struct No {
-    int total_ids;
-    int ids[ORDEM];
-    long offsets[ORDEM];
-    struct No *filhos[ORDEM + 1];
-    int eh_folha;
+  int total_ids;
+  int ids[ORDEM];
+  long offsets[ORDEM];
+  struct No *filhos[ORDEM + 1];
+  int eh_folha;
 } NoB;
 
-
-
 Veiculo ler_veiculo_arquivo(long offset);
-
 long salvar_veiculo_arquivo(Veiculo v);
-NoB* criar_no(int eh_folha);
+NoB *criar_no(int eh_folha);
 void inserir_arvore(NoB **raiz, int id, long offset);
 long buscar_arvore(NoB *raiz, int id);
 void finalizar_indices(NoB *raiz);
