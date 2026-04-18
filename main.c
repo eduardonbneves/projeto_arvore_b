@@ -1,11 +1,9 @@
 #include "global.h"
 
 int main() {
-    // 1. Inicialização
-    NoB *raiz = NULL; // Começamos com a árvore vazia
-    int proximo_id = 1; // Valor inicial padrão
+    NoB *raiz = NULL;
+    int proximo_id = 1;
 
-    // --- LOGICA DE AUTO-INCREMENTO (Início) ---
     // Tentamos abrir o arquivo para descobrir qual o maior ID que já existe
     FILE *arq_check = fopen("veiculos.dat", "r");
     if (arq_check != NULL) {
@@ -23,7 +21,6 @@ int main() {
         }
         fclose(arq_check);
     }
-    // --- LOGICA DE AUTO-INCREMENTO (Fim) ---
 
     // 2. Criar a raiz se ela não existir
     if (raiz == NULL) raiz = criar_no(1);
@@ -39,7 +36,6 @@ int main() {
 
     // 6. Colocar na Árvore-B (Programador B)
     // Aqui, no futuro, você usará a função inserir_arvore completa.
-    // Por enquanto, mantemos a inserção manual para o seu teste de busca:
     raiz->ids[0] = v1.id;
     raiz->offsets[0] = pos;
     raiz->total_ids = 1;
