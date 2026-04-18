@@ -10,10 +10,10 @@
 
 #define TAM_ID 5
 
-#define MAX_MARCA 20
+#define MAX_MARCA 50
 #define MAX_MODELO 50
-#define MAX_ANO 9
-#define MAX_COR 15
+#define MAX_ANO 10
+#define MAX_COR 20
 #define MAX_COMBUSTIVEL 20
 #define MAX_CAMBIO 20
 

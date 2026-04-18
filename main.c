@@ -1,4 +1,99 @@
 #include "global.h"
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+
+void ler_string_seguro(char *dest, int max) {
+  fgets(dest, max, stdin);
+  int len = strlen(dest);
+  if (len > 0 && dest[len - 1] == '\n') {
+    dest[len - 1] = '\0';
+  } else {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+      ;
+  }
+}
+
+void ler_somente_letras(char *dest, int max) {
+  while (1) {
+    ler_string_seguro(dest, max);
+    int valido = 1;
+    for (int i = 0; dest[i] != '\0'; i++) {
+      if (!isalpha(dest[i]) && dest[i] != ' ') {
+        valido = 0;
+        break;
+      }
+    }
+    if (valido && strlen(dest) > 0)
+      break;
+    printf("Entrada invalida! Digite apenas letras/palavras: ");
+  }
+}
+
+void ler_alfanumerico(char *dest, int max) {
+  while (1) {
+    ler_string_seguro(dest, max);
+    int valido = 1;
+    for (int i = 0; dest[i] != '\0'; i++) {
+      if (!isalnum(dest[i]) && dest[i] != ' ' && dest[i] != '-') {
+        valido = 0;
+        break;
+      }
+    }
+    if (valido && strlen(dest) > 0)
+      break;
+    printf("Entrada invalida! Digite letras ou numeros permitidos: ");
+  }
+}
+
+void ler_ano_texto(char *dest, int max) {
+  while (1) {
+    ler_string_seguro(dest, max);
+    if (strlen(dest) >= 4)
+      break;
+    printf("Entrada invalida! O ano deve ter no minimo 4 caracteres: ");
+  }
+}
+
+int ler_inteiro() {
+  char buffer[256];
+  while (1) {
+    ler_string_seguro(buffer, sizeof(buffer));
+    int valido = 1;
+    for (int i = 0; buffer[i] != '\0'; i++) {
+      if (!isdigit(buffer[i]) && buffer[i] != '-') {
+        valido = 0;
+        break;
+      }
+    }
+    if (valido && strlen(buffer) > 0)
+      return atoi(buffer);
+    printf("Entrada invalida! Digite apenas numeros inteiros: ");
+  }
+}
+
+float ler_float() {
+  char buffer[256];
+  while (1) {
+    ler_string_seguro(buffer, sizeof(buffer));
+    int valido = 1;
+    int pontos = 0;
+    for (int i = 0; buffer[i] != '\0'; i++) {
+      if (buffer[i] == '.')
+        pontos++;
+      else if (!isdigit(buffer[i])) {
+        valido = 0;
+        break;
+      }
+    }
+    if (valido && pontos <= 1 && strlen(buffer) > 0 &&
+        strcmp(buffer, ".") != 0) {
+      return atof(buffer);
+    }
+    printf("Entrada invalida! Digite um valor numerico (ex: 35000.50): ");
+  }
+}
 
 void carregar_arvore_do_indice(NoB **raiz, int *proximo_id) {
   FILE *arq = fopen(ARQUIVO_INDICE, "r");
@@ -24,33 +119,37 @@ void carregar_arvore_do_indice(NoB **raiz, int *proximo_id) {
   printf("Arvore reconstruida com sucesso a partir de %s!\n", ARQUIVO_INDICE);
 }
 
-// Funcao para listar veiculos em ordem crescente de ID varrendo a Arvore-B
-// (In-Order Traversal)
 void listar_todos_em_ordem(NoB *raiz) {
   if (raiz == NULL)
     return;
 
   int i;
   for (i = 0; i < raiz->total_ids; i++) {
-    // Primeiro desce para o filho à esquerda do índice atual
     if (!raiz->eh_folha) {
       listar_todos_em_ordem(raiz->filhos[i]);
     }
-
-    // Em seguida, extrai e printa a chave/dado do nó avaliado
     Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
     if (v.id != -1) {
-      printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-4s | Preco: "
+      printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
              "R$%-9.2f |\n",
              TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
     }
   }
-
-  // Por último, desce para o filho mais à direita (que é maior que todos os ids
-  // correntes do nó)
   if (!raiz->eh_folha) {
     listar_todos_em_ordem(raiz->filhos[i]);
   }
+}
+
+// Limpeza profunda da arvore via In-Order/Pos-Ordem para evitar Leak
+void liberar_arvore(NoB *raiz) {
+  if (raiz == NULL)
+    return;
+  if (!raiz->eh_folha) {
+    for (int i = 0; i <= raiz->total_ids; i++) {
+      liberar_arvore(raiz->filhos[i]);
+    }
+  }
+  free(raiz);
 }
 
 int main() {
@@ -70,14 +169,7 @@ int main() {
     printf("========================\n");
     printf("Escolha uma opcao: ");
 
-    if (scanf("%d", &opcao_menu) != 1) {
-      printf("Entrada invalida. Tente novamente.\n");
-      while (getchar() != '\n')
-        ;
-      continue;
-    }
-
-    int c; // Auxiliar para limpeza de buffer
+    opcao_menu = ler_inteiro();
 
     switch (opcao_menu) {
     case 1: {
@@ -85,43 +177,35 @@ int main() {
       v.id = proximo_id++;
       v.status = 1;
 
-      while ((c = getchar()) != '\n' && c != EOF)
-        ; // Pula o newline restante do scanf
-
       printf("\n--- Inserir Novo Veiculo (ID %0*d) ---\n", TAM_ID, v.id);
 
       printf("Marca: ");
-      fgets(v.marca, MAX_MARCA, stdin);
-      v.marca[strcspn(v.marca, "\n")] = 0;
+      ler_alfanumerico(v.marca, MAX_MARCA);
 
       printf("Modelo: ");
-      fgets(v.modelo, MAX_MODELO, stdin);
-      v.modelo[strcspn(v.modelo, "\n")] = 0;
+      ler_alfanumerico(
+          v.modelo, MAX_MODELO); // Permite letras e numeros ex: C3, 208, HB20
 
       printf("Ano: ");
-      fgets(v.ano, MAX_ANO, stdin);
-      v.ano[strcspn(v.ano, "\n")] = 0;
+      ler_ano_texto(v.ano, MAX_ANO);
 
       printf("Cor: ");
-      fgets(v.cor, MAX_COR, stdin);
-      v.cor[strcspn(v.cor, "\n")] = 0;
+      ler_somente_letras(v.cor, MAX_COR);
 
       printf("Combustivel: ");
-      fgets(v.combustivel, MAX_COMBUSTIVEL, stdin);
-      v.combustivel[strcspn(v.combustivel, "\n")] = 0;
+      ler_somente_letras(v.combustivel, MAX_COMBUSTIVEL);
 
       printf("Cambio: ");
-      fgets(v.cambio, MAX_CAMBIO, stdin);
-      v.cambio[strcspn(v.cambio, "\n")] = 0;
+      ler_somente_letras(v.cambio, MAX_CAMBIO);
 
       printf("Portas: ");
-      scanf("%d", &v.portas);
+      v.portas = ler_inteiro();
 
       printf("Preco: ");
-      scanf("%f", &v.preco);
+      v.preco = ler_float();
 
       printf("Quilometragem: ");
-      scanf("%d", &v.km);
+      v.km = ler_inteiro();
 
       long pos = salvar_veiculo_arquivo(v);
 
@@ -130,9 +214,6 @@ int main() {
         printf("\n=> Veiculo ID %0*d salvo e indexado com sucesso no offset "
                "%ld!\n",
                TAM_ID, v.id, pos);
-
-        // Salva o índice em disco imediatamente para evitar perda por crashes
-        // ou Ctrl+C
         finalizar_indices(raiz);
       } else {
         printf("\n=> Erro ao salvar veiculo no arquivo de dados.\n");
@@ -141,15 +222,9 @@ int main() {
       break;
     }
     case 2: {
-      int id_busca;
       printf("\n--- Buscar Veiculo ---\n");
       printf("Digite o ID do veiculo: ");
-      if (scanf("%d", &id_busca) != 1) {
-        printf("Entrada invalida.\n");
-        while (getchar() != '\n')
-          ;
-        break;
-      }
+      int id_busca = ler_inteiro();
 
       long offset_achado = buscar_arvore(raiz, id_busca);
 
@@ -190,6 +265,8 @@ int main() {
       break;
     case 0:
       finalizar_indices(raiz);
+      liberar_arvore(raiz);
+      printf("\nSaindo e memoria da Arvore-B liberada com sucesso.\n");
       break;
     default:
       printf("Opcao invalida. Tente novamente.\n");
