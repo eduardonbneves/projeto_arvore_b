@@ -8,6 +8,8 @@
 #define ARQUIVO_DADOS "veiculos.dat"
 #define ARQUIVO_INDICE "indices.idx"
 
+#define TAM_ID 5
+
 #define MAX_MARCA 20
 #define MAX_MODELO 50
 #define MAX_ANO 9
@@ -40,11 +42,14 @@ typedef struct No {
 } NoB;
 
 
-long salvar_veiculo_arquivo(Veiculo v);
+
 Veiculo ler_veiculo_arquivo(long offset);
 
+long salvar_veiculo_arquivo(Veiculo v);
 NoB* criar_no(int eh_folha);
 void inserir_arvore(NoB **raiz, int id, long offset);
 long buscar_arvore(NoB *raiz, int id);
+void finalizar_indices(NoB *raiz);
+void salvar_indice_texto_recursivo(NoB *raiz, FILE *arq);
 
 #endif
