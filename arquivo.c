@@ -11,9 +11,9 @@ long salvar_veiculo_arquivo(Veiculo v) {
 
   // Escreve no formato ASCII (campos fixos e variveis com delimitador)
   // Exemplo: ID|MARCA (20 chars)|MODELO...
-  fprintf(arq, "%0*d|%-50s|%s|%s|%s|%s|%s|%d|%.2f|%d|%d\n", TAM_ID, v.id,
-          v.marca, v.modelo, v.ano, v.cor, v.combustivel, v.cambio, v.portas,
-          v.preco, v.km, v.status);
+  fprintf(arq, "%0*d|%-50s|%s|%s|%s|%s|%s|%d|%.2f|%d\n", TAM_ID, v.id, v.marca,
+          v.modelo, v.ano, v.cor, v.combustivel, v.cambio, v.portas, v.preco,
+          v.km);
 
   fclose(arq);
   return offset;
@@ -101,10 +101,6 @@ Veiculo ler_veiculo_arquivo(long offset) {
     token = strsep_custom(&linha_ptr, "|");
     if (token)
       v.km = atoi(token);
-
-    token = strsep_custom(&linha_ptr, "|");
-    if (token)
-      v.status = atoi(token);
   }
 
   fclose(arq);

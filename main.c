@@ -141,7 +141,9 @@ void carregar_arvore_do_indice(NoB **raiz, int *proximo_id) {
 
   while (fgets(linha, sizeof(linha), arq)) {
     if (sscanf(linha, "%d|%ld", &id_lido, &offset_lido) == 2) {
-      inserir_arvore(raiz, id_lido, offset_lido);
+      if (offset_lido != -1) {
+        inserir_arvore(raiz, id_lido, offset_lido);
+      }
       if (id_lido >= *proximo_id) {
         *proximo_id = id_lido + 1;
       }
@@ -161,16 +163,56 @@ void listar_todos_em_ordem(NoB *raiz) {
     if (!raiz->eh_folha) {
       listar_todos_em_ordem(raiz->filhos[i]);
     }
-    Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
-    if (v.id != -1) {
-      printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
-             "R$%-10.2f |\n",
-             TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
+    if (raiz->offsets[i] != -1) {
+      Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
+      if (v.id != -1) {
+        printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
+               "R$%-10.2f |\n",
+               TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
+      }
     }
   }
   if (!raiz->eh_folha) {
     listar_todos_em_ordem(raiz->filhos[i]);
   }
+}
+
+void compactar_banco_recursivo(NoB *raiz, FILE *novo_arq) {
+  if (raiz != NULL) {
+    int i;
+    for (i = 0; i < raiz->total_ids; i++) {
+      compactar_banco_recursivo(raiz->filhos[i], novo_arq);
+      if (raiz->offsets[i] != -1) {
+        Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
+        if (v.id != -1) {
+          long novo_offset = ftell(novo_arq);
+          fprintf(novo_arq, "%0*d|%-50s|%s|%s|%s|%s|%s|%d|%.2f|%d\n", TAM_ID,
+                  v.id, v.marca, v.modelo, v.ano, v.cor, v.combustivel,
+                  v.cambio, v.portas, v.preco, v.km);
+          raiz->offsets[i] = novo_offset;
+        }
+      }
+    }
+    compactar_banco_recursivo(raiz->filhos[i], novo_arq);
+  }
+}
+
+void desfragmentar_dados(NoB **raiz) {
+  printf("\nIniciando compactacao e limpeza do banco de dados...\n");
+  FILE *novo_arq = fopen("veiculos_tmp.dat", "w");
+  if (!novo_arq) {
+    printf("Erro ao criar arquivo temporario!\n");
+    return;
+  }
+  compactar_banco_recursivo(*raiz, novo_arq);
+  fclose(novo_arq);
+
+  remove(ARQUIVO_DADOS);
+  rename("veiculos_tmp.dat", ARQUIVO_DADOS);
+
+  finalizar_indices(*raiz);
+  printf("Banco de dados otimizado com sucesso! Registros desatualizados do "
+         "veiculos.dat foram fisicamente excluidos.\n");
 }
 
 // Limpeza profunda da arvore via In-Order/Pos-Ordem para evitar Leak
@@ -198,6 +240,8 @@ int main() {
     printf("1. Inserir Veiculo\n");
     printf("2. Buscar Veiculo\n");
     printf("3. Listar Todos (por ID)\n");
+    printf("4. Editar Veiculo\n");
+    printf("5. Remover Veiculo\n");
     printf("0. Sair\n");
     printf("========================\n");
     printf("Escolha uma opcao: ");
@@ -208,7 +252,6 @@ int main() {
     case 1: {
       Veiculo v;
       v.id = proximo_id++;
-      v.status = 1;
 
       printf("\n--- Inserir Novo Veiculo (ID %0*d) ---\n", TAM_ID, v.id);
 
@@ -277,7 +320,6 @@ int main() {
           printf(" Portas:      %d\n", v.portas);
           printf(" Preco:       R$%.2f\n", v.preco);
           printf(" Km:          %d\n", v.km);
-          printf(" Status:      %d\n", v.status);
           printf("===================================\n");
         } else {
           printf("Erro ao decodificar os dados do disco.\n");
@@ -290,14 +332,75 @@ int main() {
     case 3:
       printf("\n--- Listagem de Veiculos Cadastrados (Por ID) ---\n");
       if (raiz == NULL || raiz->total_ids == 0) {
-        printf("A arvore esta vazia!\n");
+        printf("Nenhum veiculo cadastrado.\n");
       } else {
         listar_todos_em_ordem(raiz);
+        printf("-------------------------------------------------\n");
       }
-      printf("-------------------------------------------------\n");
       break;
+    case 4: {
+      printf("\n--- Editar Veiculo ---\n");
+      printf("Digite o ID do veiculo a ser editado: ");
+      int id_edit = ler_inteiro();
+      long offset_edit = buscar_arvore(raiz, id_edit);
+      if (offset_edit != -1) {
+        Veiculo v = ler_veiculo_arquivo(offset_edit);
+        if (v.id != -1) {
+          printf("\n=> Editando Veiculo [%s %s]\n", v.marca, v.modelo);
+          printf("Nova Marca: ");
+          ler_alfanumerico(v.marca, MAX_MARCA);
+          printf("Novo Modelo: ");
+          ler_alfanumerico(v.modelo, MAX_MODELO);
+          printf("Novo Ano: ");
+          ler_ano_texto(v.ano, MAX_ANO);
+          printf("Nova Cor: ");
+          ler_somente_letras(v.cor, MAX_COR);
+          printf("Novo Combustivel: ");
+          ler_somente_letras(v.combustivel, MAX_COMBUSTIVEL);
+          printf("Novo Cambio: ");
+          ler_somente_letras(v.cambio, MAX_CAMBIO);
+          printf("Novas Portas: ");
+          v.portas = ler_inteiro();
+          printf("Novo Preco: ");
+          v.preco = ler_float();
+          printf("Nova Quilometragem: ");
+          v.km = ler_inteiro();
+
+          long novo_pos = salvar_veiculo_arquivo(v);
+          if (novo_pos != -1) {
+            atualizar_offset_arvore(raiz, id_edit, novo_pos);
+            finalizar_indices(raiz);
+            printf("\n=> Veiculo ID %0*d atualizado com sucesso!\n", TAM_ID,
+                   id_edit);
+          } else {
+            printf("\nErro ao salvar as alteracoes no disco.\n");
+          }
+        }
+      } else {
+        printf("\n=> Veiculo ID %0*d nao encontrado ou ja removido.\n", TAM_ID,
+               id_edit);
+      }
+      break;
+    }
+    case 5: {
+      printf("\n--- Remover Veiculo ---\n");
+      printf("Digite o ID do veiculo a ser removido: ");
+      int id_rem = ler_inteiro();
+      long offset_rem = buscar_arvore(raiz, id_rem);
+      if (offset_rem != -1) {
+        if (atualizar_offset_arvore(raiz, id_rem, -1)) {
+          finalizar_indices(raiz);
+          printf("\n=> Veiculo ID %0*d removido com sucesso!\n", TAM_ID,
+                 id_rem);
+        }
+      } else {
+        printf("\n=> Veiculo ID %0*d nao encontrado ou ja removido.\n", TAM_ID,
+               id_rem);
+      }
+      break;
+    }
     case 0:
-      finalizar_indices(raiz);
+      desfragmentar_dados(&raiz);
       liberar_arvore(raiz);
       printf("\nSaindo e memoria da Arvore-B liberada com sucesso.\n");
       break;

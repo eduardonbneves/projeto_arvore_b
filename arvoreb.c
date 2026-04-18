@@ -36,6 +36,18 @@ long buscar_arvore(NoB *raiz, int id) {
   return buscar_arvore(raiz->filhos[i], id);
 }
 
+int atualizar_offset_arvore(NoB *raiz, int id, long novo_offset) {
+  if (raiz == NULL) return 0;
+  int i = 0;
+  while (i < raiz->total_ids && id > raiz->ids[i]) i++;
+  if (i < raiz->total_ids && id == raiz->ids[i]) {
+    raiz->offsets[i] = novo_offset;
+    return 1;
+  }
+  if (raiz->eh_folha) return 0;
+  return atualizar_offset_arvore(raiz->filhos[i], id, novo_offset);
+}
+
 void dividir_no(NoB *pai, int i, NoB *filho_cheio) {
   NoB *novo = criar_no(filho_cheio->eh_folha);
   int t = (ORDEM - 1) / 2; // Ponto médio
@@ -123,9 +135,11 @@ void salvar_indice_texto_recursivo(NoB *raiz, FILE *arq) {
   if (raiz == NULL)
     return;
 
-  // Salva os dados de cada ID presente neste nó
+  // Salva os dados de cada ID presente neste nó apenas se não for fantasma
   for (int i = 0; i < raiz->total_ids; i++) {
-    fprintf(arq, "%0*d|%ld\n", TAM_ID, raiz->ids[i], raiz->offsets[i]);
+    if (raiz->offsets[i] != -1) {
+      fprintf(arq, "%0*d|%ld\n", TAM_ID, raiz->ids[i], raiz->offsets[i]);
+    }
   }
 
   // Se não for folha, continua navegando para os filhos
