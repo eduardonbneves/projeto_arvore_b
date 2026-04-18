@@ -28,7 +28,6 @@ typedef struct {
   int portas;
   float preco;
   int km;
-  int status; // 1 para ativo, 0 para removido (opcional)
 } Veiculo;
 
 #define ORDEM 6
@@ -46,6 +45,7 @@ long salvar_veiculo_arquivo(Veiculo v);
 NoB *criar_no(int eh_folha);
 void inserir_arvore(NoB **raiz, int id, long offset);
 long buscar_arvore(NoB *raiz, int id);
+int atualizar_offset_arvore(NoB *raiz, int id, long novo_offset);
 void finalizar_indices(NoB *raiz);
 void salvar_indice_texto_recursivo(NoB *raiz, FILE *arq);
 

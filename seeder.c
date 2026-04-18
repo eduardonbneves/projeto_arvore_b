@@ -7,26 +7,26 @@ int main() {
 
   NoB *raiz = NULL;
 
-  Veiculo frota[10] = {{1, "Toyota", "Corolla", "2021", "Prata", "Flex",
-                        "Automatico", 4, 115000.0, 25000, 1},
-                       {2, "Honda", "Civic", "2020/2021", "Preto", "Gasolina",
-                        "Automatico", 4, 110000.0, 35000, 1},
-                       {3, "Chevrolet", "Onix", "2022", "Branco", "Flex",
-                        "Manual", 4, 75000.0, 15000, 1},
-                       {4, "Volkswagen", "Polo", "2019", "Vermelho", "Flex",
-                        "Manual", 4, 65000.0, 55000, 1},
-                       {5, "Hyundai", "HB20", "2023", "Prata", "Flex",
-                        "Automatico", 4, 85000.0, 5000, 1},
-                       {6, "Fiat", "Argo", "2020", "Azul", "Flex", "Manual", 4,
-                        60000.0, 40000, 1},
-                       {7, "Jeep", "Renegade", "2022", "Preto", "Diesel",
-                        "Automatico", 4, 140000.0, 20000, 1},
-                       {8, "Renault", "Kwid", "2023", "Laranja", "Flex",
-                        "Manual", 4, 50000.0, 10000, 1},
-                       {9, "Nissan", "Kicks", "2021", "Cinza", "Flex",
-                        "Automatico", 4, 98000.0, 30000, 1},
-                       {10, "Ford", "Mustang", "2018", "Amarelo", "Gasolina",
-                        "Automatico", 2, 350000.0, 18000, 1}};
+  Veiculo frota[10] = {
+      {1, "Toyota", "Corolla", "2021", "Prata", "Flex", "Automatico", 4,
+       115000.0, 25000},
+      {2, "Honda", "Civic", "2020/2021", "Preto", "Gasolina", "Automatico", 4,
+       110000.0, 35000},
+      {3, "Chevrolet", "Onix", "2022", "Branco", "Flex", "Manual", 4, 75000.0,
+       15000},
+      {4, "Volkswagen", "Polo", "2019", "Vermelho", "Flex", "Manual", 4,
+       65000.0, 55000},
+      {5, "Hyundai", "HB20", "2023", "Prata", "Flex", "Automatico", 4, 85000.0,
+       5000},
+      {6, "Fiat", "Argo", "2020", "Azul", "Flex", "Manual", 4, 60000.0, 40000},
+      {7, "Jeep", "Renegade", "2022", "Preto", "Diesel", "Automatico", 4,
+       140000.0, 20000},
+      {8, "Renault", "Kwid", "2023", "Laranja", "Flex", "Manual", 4, 50000.0,
+       10000},
+      {9, "Nissan", "Kicks", "2021", "Cinza", "Flex", "Automatico", 4, 98000.0,
+       30000},
+      {10, "Ford", "Mustang", "2018", "Amarelo", "Gasolina", "Automatico", 2,
+       350000.0, 18000}};
 
   printf("Gerando banco de dados falso...\n");
   for (int i = 0; i < 10; i++) {
