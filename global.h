@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define ARQUIVO_DADOS "veiculos.dat"
 #define ARQUIVO_INDICE "indices.idx"
@@ -40,13 +41,25 @@ typedef struct No {
   int eh_folha;
 } NoB;
 
-Veiculo ler_veiculo_arquivo(long offset);
-long salvar_veiculo_arquivo(Veiculo v);
 NoB *criar_no(int eh_folha);
 void inserir_arvore(NoB **raiz, int id, long offset);
 long buscar_arvore(NoB *raiz, int id);
 int atualizar_offset_arvore(NoB *raiz, int id, long novo_offset);
 void finalizar_indices(NoB *raiz);
-void salvar_indice_texto_recursivo(NoB *raiz, FILE *arq);
+void listar_todos_em_ordem(NoB *raiz);
+void liberar_arvore(NoB *raiz);
+
+Veiculo ler_veiculo_arquivo(long offset);
+long salvar_veiculo_arquivo(Veiculo v);
+void carregar_arvore_do_indice(NoB **raiz, int *proximo_id);
+void compactar_banco_recursivo(NoB *raiz, FILE *novo_arq);
+void desfragmentar_dados(NoB **raiz);
+
+int ler_string_seguro(char *dest, int max);
+void ler_somente_letras(char *dest, int max);
+void ler_alfanumerico(char *dest, int max);
+void ler_ano_texto(char *dest, int max);
+int ler_inteiro();
+float ler_float();
 
 #endif

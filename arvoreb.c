@@ -130,36 +130,39 @@ void inserir_arvore(NoB **raiz, int id, long offset) {
   }
 }
 
-// Função que percorre a árvore e grava ID e Offset em formato legível
-void salvar_indice_texto_recursivo(NoB *raiz, FILE *arq) {
+void listar_todos_em_ordem(NoB *raiz) {
   if (raiz == NULL)
     return;
 
-  // Salva os dados de cada ID presente neste nó apenas se não for fantasma
-  for (int i = 0; i < raiz->total_ids; i++) {
+  int i;
+  for (i = 0; i < raiz->total_ids; i++) {
+    if (!raiz->eh_folha) {
+      listar_todos_em_ordem(raiz->filhos[i]);
+    }
     if (raiz->offsets[i] != -1) {
-      fprintf(arq, "%0*d|%ld\n", TAM_ID, raiz->ids[i], raiz->offsets[i]);
+      Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
+      if (v.id != -1) {
+        printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
+               "R$%-10.2f |\n",
+               TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
+      }
     }
   }
+  if (!raiz->eh_folha) {
+    listar_todos_em_ordem(raiz->filhos[i]);
+  }
+}
 
-  // Se não for folha, continua navegando para os filhos
+// Limpeza profunda da arvore via In-Order/Pos-Ordem para evitar Leak
+void liberar_arvore(NoB *raiz) {
+  if (raiz == NULL)
+    return;
   if (!raiz->eh_folha) {
     for (int i = 0; i <= raiz->total_ids; i++) {
-      salvar_indice_texto_recursivo(raiz->filhos[i], arq);
+      liberar_arvore(raiz->filhos[i]);
     }
   }
+  free(raiz);
 }
 
-// Função principal para abrir o arquivo e iniciar a gravação
-void finalizar_indices(NoB *raiz) {
-  // Usamos "w" (write) para sobrescrever o índice antigo com o estado atual da
-  // RAM
-  FILE *arq = fopen(ARQUIVO_INDICE, "w");
-  if (arq != NULL) {
-    salvar_indice_texto_recursivo(raiz, arq);
-    fclose(arq);
-    printf("Arquivo '%s' gerado com sucesso!\n", ARQUIVO_INDICE);
-  } else {
-    printf("Erro ao criar o arquivo de indices.\n");
-  }
-}
+
