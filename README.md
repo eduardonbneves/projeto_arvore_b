@@ -3,7 +3,7 @@
 1.  **Compile o projeto:**
 
     ```bash
-    gcc main.c arquivo.c arvoreb.c -o main
+    gcc main.c arquivo.c arvoreb.c helpers.c -o main
     ```
 
 2.  **Execute o projeto:**
@@ -16,4 +16,4 @@
 
 **Rode o seguinte comando para preencher os arquivos com dados de teste:**
 
-    gcc seeder.c arquivo.c arvoreb.c -o seeder.exe; ./seeder.exe
+    gcc seeder.c -o seeder.exe; ./seeder.exe
