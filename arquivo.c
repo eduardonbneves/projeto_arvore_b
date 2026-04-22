@@ -154,9 +154,7 @@ void carregar_arvore_do_indice(NoB **raiz, int *proximo_id) {
 
   while (fgets(linha, sizeof(linha), arq)) {
     if (sscanf(linha, "%d|%ld", &id_lido, &offset_lido) == 2) {
-      if (offset_lido != -1) {
-        inserir_arvore(raiz, id_lido, offset_lido);
-      }
+      inserir_arvore(raiz, id_lido, offset_lido);
       if (id_lido >= *proximo_id) {
         *proximo_id = id_lido + 1;
       }
