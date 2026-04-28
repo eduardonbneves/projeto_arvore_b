@@ -1,10 +1,10 @@
 #ifndef GLOBAL_H_INCLUDED
 #define GLOBAL_H_INCLUDED
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #define ARQUIVO_DADOS "veiculos.dat"
 #define ARQUIVO_INDICE "indices.idx"
@@ -45,6 +45,7 @@ NoB *criar_no(int eh_folha);
 void inserir_arvore(NoB **raiz, int id, long offset);
 long buscar_arvore(NoB *raiz, int id);
 int atualizar_offset_arvore(NoB *raiz, int id, long novo_offset);
+int remover_arvore(NoB **raiz, int id);
 void finalizar_indices(NoB *raiz);
 void listar_todos_em_ordem(NoB *raiz);
 void liberar_arvore(NoB *raiz);

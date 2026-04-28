@@ -37,14 +37,17 @@ long buscar_arvore(NoB *raiz, int id) {
 }
 
 int atualizar_offset_arvore(NoB *raiz, int id, long novo_offset) {
-  if (raiz == NULL) return 0;
+  if (raiz == NULL)
+    return 0;
   int i = 0;
-  while (i < raiz->total_ids && id > raiz->ids[i]) i++;
+  while (i < raiz->total_ids && id > raiz->ids[i])
+    i++;
   if (i < raiz->total_ids && id == raiz->ids[i]) {
     raiz->offsets[i] = novo_offset;
     return 1;
   }
-  if (raiz->eh_folha) return 0;
+  if (raiz->eh_folha)
+    return 0;
   return atualizar_offset_arvore(raiz->filhos[i], id, novo_offset);
 }
 
@@ -139,13 +142,11 @@ void listar_todos_em_ordem(NoB *raiz) {
     if (!raiz->eh_folha) {
       listar_todos_em_ordem(raiz->filhos[i]);
     }
-    if (raiz->offsets[i] != -1) {
-      Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
-      if (v.id != -1) {
-        printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
-               "R$%-10.2f |\n",
-               TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
-      }
+    Veiculo v = ler_veiculo_arquivo(raiz->offsets[i]);
+    if (v.id != -1) {
+      printf("| ID: %0*d | Marca: %-15s | Modelo: %-15s | Ano: %-9s | Preco: "
+             "R$%-10.2f |\n",
+             TAM_ID, v.id, v.marca, v.modelo, v.ano, v.preco);
     }
   }
   if (!raiz->eh_folha) {
@@ -165,4 +166,206 @@ void liberar_arvore(NoB *raiz) {
   free(raiz);
 }
 
+void remover_de_folha(NoB *no, int idx) {
+  for (int i = idx + 1; i < no->total_ids; ++i) {
+    no->ids[i - 1] = no->ids[i];
+    no->offsets[i - 1] = no->offsets[i];
+  }
+  no->total_ids--;
+}
 
+void fundir(NoB *no, int idx) {
+  NoB *filho = no->filhos[idx];
+  NoB *irmao = no->filhos[idx + 1];
+
+  filho->ids[filho->total_ids] = no->ids[idx];
+  filho->offsets[filho->total_ids] = no->offsets[idx];
+
+  for (int i = 0; i < irmao->total_ids; ++i) {
+    filho->ids[i + filho->total_ids + 1] = irmao->ids[i];
+    filho->offsets[i + filho->total_ids + 1] = irmao->offsets[i];
+  }
+
+  if (!filho->eh_folha) {
+    for (int i = 0; i <= irmao->total_ids; ++i) {
+      filho->filhos[i + filho->total_ids + 1] = irmao->filhos[i];
+    }
+  }
+
+  for (int i = idx + 1; i < no->total_ids; ++i) {
+    no->ids[i - 1] = no->ids[i];
+    no->offsets[i - 1] = no->offsets[i];
+  }
+
+  for (int i = idx + 2; i <= no->total_ids; ++i) {
+    no->filhos[i - 1] = no->filhos[i];
+  }
+
+  filho->total_ids += irmao->total_ids + 1;
+  no->total_ids--;
+
+  free(irmao);
+}
+
+void pegar_emprestado_anterior(NoB *no, int idx) {
+  NoB *filho = no->filhos[idx];
+  NoB *irmao = no->filhos[idx - 1];
+
+  for (int i = filho->total_ids - 1; i >= 0; --i) {
+    filho->ids[i + 1] = filho->ids[i];
+    filho->offsets[i + 1] = filho->offsets[i];
+  }
+
+  if (!filho->eh_folha) {
+    for (int i = filho->total_ids; i >= 0; --i) {
+      filho->filhos[i + 1] = filho->filhos[i];
+    }
+  }
+
+  filho->ids[0] = no->ids[idx - 1];
+  filho->offsets[0] = no->offsets[idx - 1];
+
+  if (!filho->eh_folha) {
+    filho->filhos[0] = irmao->filhos[irmao->total_ids];
+  }
+
+  no->ids[idx - 1] = irmao->ids[irmao->total_ids - 1];
+  no->offsets[idx - 1] = irmao->offsets[irmao->total_ids - 1];
+
+  filho->total_ids += 1;
+  irmao->total_ids -= 1;
+}
+
+void pegar_emprestado_proximo(NoB *no, int idx) {
+  NoB *filho = no->filhos[idx];
+  NoB *irmao = no->filhos[idx + 1];
+
+  filho->ids[filho->total_ids] = no->ids[idx];
+  filho->offsets[filho->total_ids] = no->offsets[idx];
+
+  if (!filho->eh_folha) {
+    filho->filhos[filho->total_ids + 1] = irmao->filhos[0];
+  }
+
+  no->ids[idx] = irmao->ids[0];
+  no->offsets[idx] = irmao->offsets[0];
+
+  for (int i = 1; i < irmao->total_ids; ++i) {
+    irmao->ids[i - 1] = irmao->ids[i];
+    irmao->offsets[i - 1] = irmao->offsets[i];
+  }
+
+  if (!irmao->eh_folha) {
+    for (int i = 1; i <= irmao->total_ids; ++i) {
+      irmao->filhos[i - 1] = irmao->filhos[i];
+    }
+  }
+
+  filho->total_ids += 1;
+  irmao->total_ids -= 1;
+}
+
+void preencher(NoB *no, int idx) {
+  int min_keys = (ORDEM - 1) / 2;
+  if (idx != 0 && no->filhos[idx - 1]->total_ids >= min_keys + 1) {
+    pegar_emprestado_anterior(no, idx);
+  } else if (idx != no->total_ids &&
+             no->filhos[idx + 1]->total_ids >= min_keys + 1) {
+    pegar_emprestado_proximo(no, idx);
+  } else {
+    if (idx != no->total_ids) {
+      fundir(no, idx);
+    } else {
+      fundir(no, idx - 1);
+    }
+  }
+}
+
+void remover_de_no(NoB *no, int id);
+
+void remover_de_nao_folha(NoB *no, int idx) {
+  int id = no->ids[idx];
+  int min_keys = (ORDEM - 1) / 2;
+
+  if (no->filhos[idx]->total_ids >= min_keys + 1) {
+    NoB *atual = no->filhos[idx];
+    while (!atual->eh_folha)
+      atual = atual->filhos[atual->total_ids];
+
+    int pred_id = atual->ids[atual->total_ids - 1];
+    long pred_offset = atual->offsets[atual->total_ids - 1];
+
+    no->ids[idx] = pred_id;
+    no->offsets[idx] = pred_offset;
+    remover_de_no(no->filhos[idx], pred_id);
+  } else if (no->filhos[idx + 1]->total_ids >= min_keys + 1) {
+    NoB *atual = no->filhos[idx + 1];
+    while (!atual->eh_folha)
+      atual = atual->filhos[0];
+
+    int suc_id = atual->ids[0];
+    long suc_offset = atual->offsets[0];
+
+    no->ids[idx] = suc_id;
+    no->offsets[idx] = suc_offset;
+    remover_de_no(no->filhos[idx + 1], suc_id);
+  } else {
+    fundir(no, idx);
+    remover_de_no(no->filhos[idx], id);
+  }
+}
+
+void remover_de_no(NoB *no, int id) {
+  int idx = 0;
+  while (idx < no->total_ids && no->ids[idx] < id)
+    ++idx;
+
+  if (idx < no->total_ids && no->ids[idx] == id) {
+    if (no->eh_folha) {
+      remover_de_folha(no, idx);
+    } else {
+      remover_de_nao_folha(no, idx);
+    }
+  } else {
+    if (no->eh_folha) {
+      return;
+    }
+
+    int flag = ((idx == no->total_ids) ? 1 : 0);
+    int min_keys = (ORDEM - 1) / 2;
+
+    if (no->filhos[idx]->total_ids < min_keys + 1) {
+      preencher(no, idx);
+    }
+
+    if (flag && idx > no->total_ids) {
+      remover_de_no(no->filhos[idx - 1], id);
+    } else {
+      remover_de_no(no->filhos[idx], id);
+    }
+  }
+}
+
+int remover_arvore(NoB **raiz, int id) {
+  if (!*raiz) {
+    return 0; // Arvore vazia
+  }
+
+  long offset = buscar_arvore(*raiz, id);
+  if (offset == -1) {
+    return 0; // ID nao encontrado
+  }
+
+  remover_de_no(*raiz, id);
+
+  if ((*raiz)->total_ids == 0) {
+    NoB *tmp = *raiz;
+    if ((*raiz)->eh_folha) {
+      *raiz = NULL;
+    } else {
+      *raiz = (*raiz)->filhos[0];
+    }
+    free(tmp);
+  }
+  return 1;
+}
