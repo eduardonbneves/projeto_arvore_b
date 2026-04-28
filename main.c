@@ -161,7 +161,7 @@ int main() {
       int id_rem = ler_inteiro();
       long offset_rem = buscar_arvore(raiz, id_rem);
       if (offset_rem != -1) {
-        if (atualizar_offset_arvore(raiz, id_rem, -1)) {
+        if (remover_arvore(&raiz, id_rem)) {
           finalizar_indices(raiz);
           printf("\n=> Veiculo ID %0*d removido com sucesso!\n", TAM_ID,
                  id_rem);
